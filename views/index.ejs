@@ -1,0 +1,513 @@
+<%-include('partials/header.ejs')%>
+
+<main>
+
+  <!-- Carousel -->
+  <div class="carousel-container">
+
+    <div class="slide">
+      <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=500&q=60" alt="Book 1" class="slide-image">
+      <div class="slide-content">
+        <h2>Scopri nuovi mondi</h2>
+        <p>Esplora ed espandi la tua libreria personale.</p>
+        <p>Commenta i tuoi libri preferiti e condividi le tue recensioni con altri lettori.</p>
+
+        <form action="/user" method="post">
+          <input type="submit" class="btn btn-primary" name="books" value="Inizia Ora">
+        </form>
+      </div>
+    </div>
+
+    <div class="slide">
+      <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=500&q=60" alt="Book 2" class="slide-image">
+      <div class="slide-content">
+        <h2>Connettiti con altri lettori</h2>
+        <p>Invita amici e crea gruppi di lettura</p>
+
+        <form action="/user" method="post">
+          <input type="submit" class="btn btn-primary" name="groups" value="Unisciti Ora">
+        </form>
+      </div>
+    </div>
+
+    <div class="slide">
+      <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=500&q=60" class="img-fluid rounded-start postcard-img" alt="Book Image">
+      <div class="slide-content">
+        <h2>Offerte Esclusive</h2>
+        <p>Registrati alla nostra newsletter per ricevere offerte speciali e aggiornamenti esclusivi.</p>
+      </div>
+    </div>
+
+    <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+    <a class="next" onclick="plusSlides(1)">&#10095;</a>
+
+  </div>
+
+  <br>
+
+  <div style="text-align:center">
+    <span class="dot" onclick="currentSlide(1)"></span> 
+    <span class="dot" onclick="currentSlide(2)"></span> 
+    <span class="dot" onclick="currentSlide(3)"></span>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- 2 Post cards -->
+  <div class="postcard-container d-flex flex-column flex-md-row justify-content-center gap-3 px-3 px-md-0 align-items-stretch">
+
+    <!-- CARD 1 -->
+    <div class="card mb-3 h-100" style="max-width: 540px;">
+      <div class="row g-0">
+        <div class="col-md-4">
+
+          <% if (book1 && book1.thumbnail) { %>
+            <img src="<%= book1.thumbnail %>" class="img-fluid rounded-start postcard-img" alt="Book Image">
+          <% } else { %>
+            <div class="placeholder bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
+              <span class="text-white">Nessuna immagine</span>
+            </div>
+          <% } %>
+
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h5 class="card-title">
+              <%= book1 && book1.title ? book1.title : "Titolo non disponibile" %>
+            </h5>
+
+            <p class="card-text short-text">
+              <%= book1 && book1.description ? book1.description.substring(0, 100) + "..." : "Descrizione non disponibile." %>
+            </p>
+
+            <p class="card-text full-text d-none">
+              <%= book1 && book1.description ? book1.description : "Descrizione non disponibile." %>
+            </p>
+
+            <a href="#" class="btn btn-primary toggle-btn">Espandi</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2 -->
+    <div class="card mb-3 h-100" style="max-width: 540px;">
+      <div class="row g-0">
+        <div class="col-md-4">
+
+          <% if (book2 && book2.thumbnail) { %>
+            <img src="<%= book2.thumbnail %>" class="img-fluid rounded-start postcard-img" alt="Book Image">
+          <% } else { %>
+            <div class="placeholder bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
+              <span class="text-white">Nessuna immagine</span>
+            </div>
+          <% } %>
+
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h5 class="card-title">
+              <%= book2 && book2.title ? book2.title : "Titolo non disponibile" %>
+            </h5>
+
+            <p class="card-text short-text">
+              <%= book2 && book2.description ? book2.description.substring(0, 100) + "..." : "Descrizione non disponibile." %>
+            </p>
+
+            <p class="card-text full-text d-none">
+              <%= book2 && book2.description ? book2.description : "Descrizione non disponibile." %>
+            </p>
+
+            <a href="#" class="btn btn-primary toggle-btn">Espandi</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Attività recenti -->
+  <div class="updates-section my-4 p-3 rounded shadow-sm">
+
+    <h6 class="updates-title mb-3">📢 Attività recenti</h6>
+
+    <% if (recentComments && recentComments.length > 0) { %>
+
+      <div id="comments-wrapper">
+  <% recentComments.forEach((comment, index) => { %>
+
+    <div class="update-item comment-item d-flex mb-3 pb-3 border-bottom" data-index="<%= index %>">
+
+
+          <a href="/book/<%= comment.bookId %>?user=<%= userId %>" class="update-thumb-link">
+            <% if (comment.thumbnail) { %>
+              <img data-src="<%= comment.thumbnail %>" class="update-thumbnail lazy-img" style="--accent-color:<%= comment.accent %>;" alt="Book thumbnail">
+            <% } %>
+          </a>
+
+          <div class="update-content flex-grow-1">
+            <strong class="update-username">@<%= comment.username %></strong>
+            <p class="update-text mb-1"><%= comment.text %></p>
+            <small class="text-muted"><%= comment.date %></small>
+          </div>
+
+        </div>
+
+      <% }) %>
+      </div>
+
+      <small class="d-block text-end mt-3">
+        <button id="toggle-comments" type="button" class="btn btn-link p-0 updates-link"> Vedi tutti </button>
+      </small>
+
+    <% } else { %>
+
+      <p class="text-muted text-center py-3">
+        Nessuna attività recente. Quando segnerai un libro come letto, apparirà qui ✨
+      </p>
+
+    <% } %>
+
+  </div>
+
+  <% if (userId && recommendedBooks && recommendedBooks.length > 0) { %>
+
+<div class="recommended-section my-5">
+  <h5 class="mb-3 carousel-title">📚 Consigliati per te</h5>
+
+  <div class="rec-wrapper">
+
+    <button class="rec-arrow rec-left">‹</button>
+
+    <div class="rec-viewport">
+      <div class="rec-track">
+
+        <% recommendedBooks.forEach(book => { %>
+          <a href="/search?q=<%= encodeURIComponent(book.volumeInfo.title) %>" 
+             class="rec-item">
+            <img data-src="<%= book.volumeInfo.imageLinks.thumbnail %>" class="rec-thumb lazy-img">
+          </a>
+        <% }) %>
+
+      </div>
+    </div>
+
+    <button class="rec-arrow rec-right">›</button>
+
+  </div>
+</div>
+
+<div class="section-divider-carousel"></div>
+
+<% } %>
+
+<% if (communityPopular && communityPopular.length > 0) { %>
+
+<div class="recommended-section my-5">
+  <h5 class="mb-3 carousel-title"> <i class="bi bi-person-hearts"> </i> Popolari nella community</h5>
+
+<div class="rec-wrapper-community">
+  <button class="rec-arrow-community rec-left-community">‹</button>
+
+  <div class="rec-viewport-community">
+    <div class="rec-track-community">
+
+      <% communityPopular.forEach(book => { %>
+        <a href="/book/<%= book.id %>" class="rec-item-community">
+          <img data-src="<%= book.thumbnail %>" class="rec-thumb-community lazy-img">
+        </a>
+      <% }) %>
+
+    </div>
+  </div>
+
+  <button class="rec-arrow-community rec-right-community">›</button>
+</div>
+</div>
+
+<% } %>
+
+<%- include('partials/footer.ejs') %>
+
+  <script>
+    let slideIndex = 1;
+    let slideTimer = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      showSlides(slideIndex);
+      startAutoPlay();
+
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const cardBody = btn.closest('.card-body');
+          const shortText = cardBody.querySelector('.short-text');
+          const fullText = cardBody.querySelector('.full-text');
+          if (fullText.classList.contains('d-none')) {
+            shortText.classList.add('d-none');
+            fullText.classList.remove('d-none');
+            btn.textContent = 'Riduci';
+          } else {
+            shortText.classList.remove('d-none');
+            fullText.classList.add('d-none');
+            btn.textContent = 'Espandi';
+          }
+        });
+      });
+    });
+
+    function startAutoPlay() {
+      stopAutoPlay();
+      slideTimer = setInterval(() => plusSlides(1), 5000);
+    }
+
+    function stopAutoPlay() {
+      if (slideTimer) clearInterval(slideTimer);
+    }
+
+    function plusSlides(n) {
+      showSlides(slideIndex + n);
+    }
+
+    function currentSlide(n) {
+      showSlides(n);
+    }
+
+    function showSlides(n) {
+      const slides = document.getElementsByClassName("slide");
+      const dots = document.getElementsByClassName("dot");
+
+      if (!slides.length) return;
+
+      if (n > slides.length) slideIndex = 1;
+      else if (n < 1) slideIndex = slides.length;
+      else slideIndex = n;
+
+      for (let slide of slides) slide.style.display = "none";
+      for (let dot of dots) dot.classList.remove("active");
+
+      slides[slideIndex - 1].style.display = "block";
+      dots[slideIndex - 1].classList.add("active");
+    }
+
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("prev") || 
+          e.target.classList.contains("next") || 
+          e.target.classList.contains("dot")) {
+        startAutoPlay();
+      }
+    });
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const comments = Array.from(document.querySelectorAll(".update-item"));
+  const toggleBtn = document.getElementById("toggle-comments");
+
+  if (!comments.length || !toggleBtn) return;
+
+  const VISIBLE_COUNT = 5;
+  let expanded = false;
+
+  function updateVisibility() {
+  comments.forEach((item, index) => {
+    if (!expanded && index >= VISIBLE_COUNT) {
+      item.classList.add("comment-hidden");
+    } else {
+      item.classList.remove("comment-hidden");
+    }
+  });
+
+  toggleBtn.textContent = expanded ? "Mostra meno" : "Vedi tutti";
+}
+
+  toggleBtn.addEventListener("click", () => {
+    expanded = !expanded;
+    updateVisibility();
+  });
+
+  updateVisibility();
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const track = document.querySelector(".rec-track");
+  const items = document.querySelectorAll(".rec-item");
+  const btnLeft = document.querySelector(".rec-left");
+  const btnRight = document.querySelector(".rec-right");
+
+  if (!track || items.length === 0) return;
+
+  let index = 0;
+  const visible = 3;
+  const total = items.length;
+
+  function updateCarousel() {
+    const itemWidth = items[0].offsetWidth + 10;
+    track.style.transform = `translateX(-${index * itemWidth}px)`;
+  }
+
+  btnRight.addEventListener("click", () => {
+    if (index < total - visible) index++;
+    updateCarousel();
+  });
+
+  btnLeft.addEventListener("click", () => {
+    if (index > 0) index--;
+    updateCarousel();
+  });
+
+  // Swipe mobile
+  let startX = 0;
+
+  track.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+  });
+
+  track.addEventListener("touchend", e => {
+    const endX = e.changedTouches[0].clientX;
+    if (endX < startX - 50 && index < total - visible) index++;
+    if (endX > startX + 50 && index > 0) index--;
+    updateCarousel();
+  });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const track = document.querySelector(".rec-track");
+  const items = document.querySelectorAll(".rec-item");
+  const btnLeft = document.querySelector(".rec-left");
+  const btnRight = document.querySelector(".rec-right");
+
+  if (!track || items.length === 0) return;
+
+  let index = 0;
+  const visible = 3;
+  const total = items.length;
+
+  function updateCarousel() {
+    const itemWidth = items[0].offsetWidth + 10;
+    track.style.transform = `translateX(-${index * itemWidth}px)`;
+  }
+
+  btnRight.addEventListener("click", () => {
+    if (index < total - visible) index++;
+    else index = 0; // loop
+    updateCarousel();
+  });
+
+  btnLeft.addEventListener("click", () => {
+    if (index > 0) index--;
+    else index = total - visible; // loop
+    updateCarousel();
+  });
+
+  // Swipe mobile
+  let startX = 0;
+
+  track.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+  });
+
+  track.addEventListener("touchend", e => {
+    const endX = e.changedTouches[0].clientX;
+    if (endX < startX - 50 && index < total - visible) index++;
+    if (endX > startX + 50 && index > 0) index--;
+    updateCarousel();
+  });
+
+  
+  // Auto scroll lento //
+  
+  let autoScroll = setInterval(() => {
+    if (index < total - visible) index++;
+    else index = 0;
+    updateCarousel();
+  }, 3500); 
+
+  track.addEventListener("touchstart", () => clearInterval(autoScroll));
+  btnLeft.addEventListener("click", () => clearInterval(autoScroll));
+  btnRight.addEventListener("click", () => clearInterval(autoScroll));
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const track = document.querySelector(".rec-track-community");
+  const items = document.querySelectorAll(".rec-item-community");
+  const btnLeft = document.querySelector(".rec-left-community");
+  const btnRight = document.querySelector(".rec-right-community");
+
+  if (!track || items.length === 0) return;
+
+  let index = 0;
+  const visible = 3;
+  const total = items.length;
+
+  function update() {
+    const itemWidth = items[0].offsetWidth + 10;
+    track.style.transform = `translateX(-${index * itemWidth}px)`;
+  }
+
+  btnRight.addEventListener("click", () => {
+    if (index < total - visible) index++;
+    else index = 0;
+    update();
+  });
+
+  btnLeft.addEventListener("click", () => {
+    if (index > 0) index--;
+    else index = total - visible;
+    update();
+  });
+
+  // Swipe mobile
+  let startX = 0;
+  track.addEventListener("touchstart", e => startX = e.touches[0].clientX);
+  track.addEventListener("touchend", e => {
+    const endX = e.changedTouches[0].clientX;
+    if (endX < startX - 50 && index < total - visible) index++;
+    if (endX > startX + 50 && index > 0) index--;
+    update();
+  });
+
+  let autoScroll = setInterval(() => {
+    if (index > 0) {
+      index--; 
+    } else {
+      index = total - visible; 
+    }
+    update();
+  }, 3500);
+
+  function stopAutoScroll() {
+    clearInterval(autoScroll);
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const lazyImages = document.querySelectorAll(".lazy-img");
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+
+      const img = entry.target;
+      const realSrc = img.getAttribute("data-src");
+
+      if (realSrc) {
+        img.src = realSrc;
+
+        img.onload = () => {
+          img.classList.add("loaded");
+        };
+      }
+
+      obs.unobserve(img);
+    });
+  }, {
+    rootMargin: "200px 0px",
+    threshold: 0.1
+  });
+
+  lazyImages.forEach(img => observer.observe(img));
+});
+
+  </script>
+
+</main>

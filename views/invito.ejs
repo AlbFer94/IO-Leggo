@@ -1,0 +1,38 @@
+<%- include("partials/header.ejs") %>
+
+<main class="container mt-5 pt-5">
+
+  <div class="text-center">
+
+    <h1 class="mb-3">📚 Sei stato invitato!</h1>
+
+    <h3 class="mb-4">
+      <strong><%= from %></strong> ti ha invitato a unirti a <span class="text-primary">IO Leggo</span>
+    </h3>
+
+    <p class="lead mb-4">
+      Entra nella community, salva i tuoi libri preferiti, commenta e partecipa ai gruppi di lettura.
+    </p>
+
+    <div class="card shadow mx-auto" style="max-width: 450px;">
+      <div class="card-body">
+
+        <p class="mb-3">
+          Clicca sul pulsante qui sotto per creare il tuo account e accettare l’invito.
+        </p>
+
+        <a href="/user?invito=<%= token %>" class="btn btn-success btn-lg w-100">
+          Registrati ora
+        </a>
+
+      </div>
+    </div>
+
+    <p class="mt-4 text-muted">
+      Hai già un account?
+      <a href="/user?logIn=true" class="text-primary">Accedi</a>
+    </p>
+
+  </div>
+
+</main>

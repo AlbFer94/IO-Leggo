@@ -1,0 +1,121 @@
+<% if (groups && groups.length > 0) { %>
+
+  <div class="accordion w-100" id="groupsAccordion">
+
+    <% groups.forEach(g => { %>
+
+      <div class="accordion-item">
+
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#group-<%= g.id %>">
+            <%= g.name %> — <small class="text-muted">Libro: <%= g.book_title %></small>
+          </button>
+        </h2>
+
+        <div id="group-<%= g.id %>" 
+             class="accordion-collapse collapse"
+             data-bs-parent="#groupsAccordion">
+
+          <div class="accordion-body">
+
+            <!-- INFO GRUPPO -->
+            <div class="group-card p-3 mb-4 rounded shadow-sm" data-group-id="<%= g.id %>">
+
+              <div class="d-flex align-items-center">
+                <img src="<%= g.book_thumbnail %>" 
+                     class="rounded shadow-sm me-3"
+                     style="width: 55px; height: 55px; object-fit: cover;">
+
+                <div class="flex-grow-1">
+                  <h5 class="mb-1 fw-semibold"><%= g.name %></h5>
+                  <p class="text-muted small mb-1">Libro: <%= g.book_title %></p>
+                  <small class="text-muted">Creato da @<%= g.creator %></small>
+                </div>
+
+                <% if (g.created_by === userId) { %>
+                  <button class="btn btn-sm btn-outline-danger delete-group-btn"
+                          data-group-id="<%= g.id %>">
+                    🗑️
+                  </button>
+                <% } %>
+              </div>
+
+              <% if (g.description) { %>
+                <p class="small text-secondary mt-3 mb-0">
+                  <%= g.description %>
+                </p>
+              <% } %>
+
+            </div>
+
+            <!-- MEMBRI -->
+            <h6 class="fw-bold mt-3">Membri</h6>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <% members.filter(m => m.group_id === g.id).forEach(m => { %>
+                <span class="member-pill">@<%= m.username %></span>
+              <% }) %>
+            </div>
+
+            <!-- THREAD HEADER -->
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+              <h5 class="fw-semibold mb-3" style="font-size: 1.05rem;">Thread di discussione</h5>
+              <button class="btn btn-sm btn-primary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#newThreadModal-<%= g.id %>">
+                + Nuovo thread
+              </button>
+            </div>
+
+            <!-- THREAD CONTAINER -->
+            <div class="thread-container" data-group-id="<%= g.id %>">
+              <%- include("thread-list", {
+                    threads: threads.filter(t => t.group_id === g.id),
+                    posts,
+                    groupId: g.id,
+                    userId
+              }) %>
+            </div>
+
+          </div> 
+
+        </div> 
+
+        <!-- MODAL NUOVO THREAD  -->
+        <div class="modal fade" id="newThreadModal-<%= g.id %>" tabindex="-1">
+          <div class="modal-dialog">
+            <form class="modal-content ajax-create-thread" data-group-id="<%= g.id %>">
+
+              <div class="modal-header">
+                <h5 class="modal-title">Nuovo thread per <%= g.name %></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+
+              <div class="modal-body">
+                <label class="form-label">Titolo del thread</label>
+                <input type="text" name="title" class="form-control" required>
+              </div>
+
+              <div class="modal-footer">
+                <button class="btn btn-primary">Crea thread</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+      </div> 
+
+    <% }) %>
+
+  </div> 
+
+<% } else { %>
+
+  <p class="text-muted text-center py-3">
+    Nessun gruppo ancora creato.
+  </p>
+
+<% } %>

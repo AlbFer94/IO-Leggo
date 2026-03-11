@@ -1,0 +1,56 @@
+<div class="accordion" id="threadAccordion-<%= groupId %>" data-user-id="<%= userId %>">
+
+  <% threads.forEach((t, index) => { %>
+
+    <div class="accordion-item thread-card mb-3 rounded shadow-sm">
+
+      <h2 class="accordion-header d-flex justify-content-between align-items-center"
+          id="thread-heading-<%= t.id %>">
+
+        <button class="accordion-button <%= index === 0 ? '' : 'collapsed' %>"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#thread-collapse-<%= t.id %>">
+          <span class="thread-badge me-2"></span>
+          <strong><%= t.title %></strong>
+          <span class="ms-2 text-muted">— @<%= t.author %></span>
+        </button>
+      </h2>
+
+      <div id="thread-collapse-<%= t.id %>"
+           class="accordion-collapse collapse <%= index === 0 ? 'show' : '' %>"
+           data-bs-parent="#threadAccordion-<%= groupId %>">
+
+        <div class="accordion-body">
+
+          <div class="messages mb-3" data-thread-id="<%= t.id %>">
+            <% posts.filter(p => p.thread_id === t.id).forEach(p => { %>
+              <div class="message-bubble mb-2 p-2 rounded">
+                <div class="d-flex align-items-center mb-1">
+                  <div class="avatar me-2 user-color" data-username="<%= p.author %>">
+                    <%= p.author[0].toUpperCase() %>
+                  </div>
+                  <strong>@<%= p.author %></strong>
+                </div>
+                <div class="message-text"><%= p.text %></div>
+              </div>
+            <% }) %>
+          </div>
+
+          
+          <form class="ajax-create-post" data-thread-id="<%= t.id %>">
+            <div class="input-group">
+              <textarea name="text" class="form-control" placeholder="Scrivi un messaggio..." required></textarea>
+              <button class="btn btn-outline-primary">Invia</button>
+            </div>
+          </form>
+
+        </div> 
+
+      </div> 
+
+    </div> 
+
+  <% }) %>
+
+</div>

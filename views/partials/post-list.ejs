@@ -1,0 +1,13 @@
+<% posts.forEach(p => { %>
+  <div class="message-bubble mb-2 p-2 rounded">
+    <div class="d-flex align-items-center mb-1">
+      <div class="avatar me-2 user-color" data-username="<%= p.author || 'unknown' %>">
+        <%=  (p.author || '?')[0].toUpperCase() %>
+      </div>
+      <strong>@<%= p.author %></strong>
+    </div>
+    <div class="message-text"><%= p.text %></div>
+  </div>
+<% }) %>
+
+

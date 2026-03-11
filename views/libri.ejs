@@ -1,0 +1,327 @@
+<%- include('partials/header.ejs') %>
+
+<section class="hero-library container">
+
+  <div class="hero-content text-center">
+    <h2 class="hero-title">
+      📚 Bentornato, 
+      <span class="hero-username"><%= username %></span>
+    </h2>
+
+    <p class="hero-subtitle">
+      Gestisci la tua libreria personale, scopri nuovi titoli e condividi le tue letture con la community.
+    </p>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <form action="/search?user=<%= userId %>" method="post" class="search-bar-container">
+    <div class="search-bar">
+      <input 
+        type="text" 
+        name="searchQuery" 
+        placeholder="Cerca un libro..."
+        class="search-input"
+        required
+      >
+      <button type="submit" class="search-btn">🔍</button>
+    </div>
+  </form>
+
+
+    <% if (!book && (!locals.savedBooks || savedBooks.length === 0)) { %>
+      <p class="text-muted mt-3 empty-library-msg">
+        La tua libreria è ancora vuota. Cerca un libro qui sopra e inizia la tua collezione 📚
+      </p>
+    <% } %>
+  </div>
+</section>
+
+<div class="container my-5">
+
+  <% if (book) { %>
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-6 col-lg-4">
+
+        <div class="book-card card shadow-sm mx-auto result-card found-book">
+
+          <h3><%= book.title %></h3>
+
+          <img src="<%= book.thumbnail %>" class="card-img-top book-img" alt="Book Image">
+
+          <p class="card-text">
+            <span class="short-text"><%= book.description.substring(0, 80) %></span>
+            <span class="dots">...</span>
+            <span class="full-text d-none"><%= book.description %>, <%= book.author %></span>
+
+            <span class="toggle-more text-primary" style="cursor:pointer; font-weight:500;">
+              altro
+            </span>
+          </p>
+
+          <div class="d-flex justify-content-end mt-3">
+            <form action="/add?user=<%= userId %>" method="post">
+              <input type="hidden" name="title" value="<%= book.title %>">
+              <input type="hidden" name="author" value="<%= book.author %>">
+              <input type="hidden" name="thumbnail" value="<%= book.thumbnail %>">
+              <input type="hidden" name="description" value="<%= book.description %>">
+
+              <button type="submit" class="btn btn-primary">Aggiungi</button>
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  <% } %>
+
+</div>
+
+<% if (book) { %>
+  <div class="section-divider-books"></div>
+<% } %>
+
+
+<% if (locals.savedBooks && savedBooks.length > 0) { %> 
+<div class="saved-library-section py-5"> 
+  <div class="container"> 
+    <h2 class="library-title text-center mb-4">📚 La tua libreria</h2> 
+
+    <!-- GRIGLIA LIBRI -->
+     <div class="container mb-4">
+  <div class="d-flex justify-content-center gap-3 py-3">
+    <button class="btn btn-outline-secondary filter-btn" data-filter="all">Tutti</button>
+    <button class="btn btn-outline-secondary filter-btn" data-filter="read">Letti</button>
+    <button class="btn btn-outline-secondary filter-btn" data-filter="unread">Da leggere</button>
+  </div>
+</div>
+
+    <div id="books-container" class="row row-cols-1 row-cols-md-3 g-4"> 
+      <% savedBooks.forEach(savedBook => { %> 
+      <div class="col">
+        <div class="card h-100 book-card shadow-sm" 
+             data-status="<%= savedBook.letto ? 'read' : 'unread' %>">
+
+          <img src="<%= savedBook.thumbnail %>" 
+               class="card-img-top book-img-small" 
+               alt="Book Image"> 
+
+          <div class="card-body d-flex flex-column"> 
+            <h5 class="card-title text-truncate"><%= savedBook.title %></h5> 
+            
+            <div class="card-text mb-3"> 
+              <span class="short-text">
+                <%= savedBook.description.substring(0, 100) %>...
+              </span> 
+              
+              <span class="full-text d-none">
+                <%= savedBook.description %>
+              </span> 
+              
+              <button class="btn btn-link btn-sm p-0 toggle-more" 
+                      style="text-decoration:none;">
+                altro
+              </button> 
+            </div> 
+            
+            <div class="mt-auto">
+
+              <% if (!savedBook.letto) { %> 
+              <form action="/rate-book?user=<%= userId %>" method="post">
+                <input type="hidden" name="bookId" value="<%= savedBook.book_id %>"> 
+                
+                <textarea name="commento" 
+                          class="form-control form-control-sm mb-2" 
+                          placeholder="Scrivi un commento..." 
+                          required></textarea> 
+                
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                  Segna come letto
+                </button> 
+              </form> 
+
+              <% } else { %> 
+              <div class="bg-light p-2 rounded"> 
+                <small class="text-success fw-bold">✓ Letto</small><br> 
+                <small class="text-muted italic">
+                  "<%= savedBook.commento %>"
+                </small> 
+              </div> 
+              <% } %> 
+
+            </div> 
+          </div> 
+        </div> 
+      </div> 
+      <% }); %> 
+    </div> 
+   
+    <div class="text-center mt-4">
+      <button id="load-more" class="btn btn-outline-primary btn-lg">
+        Vedi altri
+      </button>
+    </div>
+
+    <div id="pagination" class="mt-4 text-center"></div>
+
+  </div> 
+</div> 
+<% } %>
+
+<%- include('partials/footer.ejs') %>
+
+<script> 
+
+document.addEventListener("DOMContentLoaded", () => { 
+  const cards = document.querySelectorAll(".book-card"); 
+  cards.forEach(card => { 
+    const toggle = card.querySelector(".toggle-more"); 
+    const shortText = card.querySelector(".short-text"); 
+    const fullText = card.querySelector(".full-text"); 
+    const dots = card.querySelector(".dots"); 
+    
+    if (toggle) { 
+      toggle.addEventListener("click", () => { 
+        const isExpanded = fullText.classList.contains("d-none"); 
+        if (isExpanded) { 
+          fullText.classList.remove("d-none"); 
+          dots.classList.add("d-none"); 
+          toggle.textContent = "mostra meno"; 
+        } else { 
+          fullText.classList.add("d-none"); 
+          dots.classList.remove("d-none"); 
+          toggle.textContent = "altro"; 
+        } 
+      }); 
+    
+    } 
+  }); 
+});
+ const resultCard = document.querySelector(".found-book"); 
+ if (resultCard) { 
+  setTimeout(() => { resultCard.scrollIntoView({ behavior: "smooth", block: "start" }); 
+}, 300); } 
+
+document.addEventListener("DOMContentLoaded", () => {
+  const cards = [...document.querySelectorAll(".book-card")];
+  const loadMoreBtn = document.getElementById("load-more");
+  const pagination = document.getElementById("pagination");
+
+  let currentPage = 1;
+  const perPage = 6;
+
+  // --- Mostra solo 3 libri iniziali ---
+  let visible = 3;
+  cards.forEach((card, i) => {
+    card.parentElement.style.display = i < visible ? "block" : "none";
+  });
+
+  // --- Vedi altri (3 - 6) ---
+  loadMoreBtn.addEventListener("click", () => {
+    visible = 6;
+    cards.forEach((card, i) => {
+      card.parentElement.style.display = i < visible ? "block" : "none";
+    });
+
+    loadMoreBtn.style.display = "none";
+
+    if (cards.length > 6) {
+      renderPage();
+    }
+  });
+})
+
+document.addEventListener("DOMContentLoaded", () => {
+  const allCards = [...document.querySelectorAll(".book-card")];
+  const loadMoreBtn = document.getElementById("load-more");
+  const pagination = document.getElementById("pagination");
+  const filterBtns = document.querySelectorAll(".filter-btn");
+
+  let currentPage = 1;
+  const perPage = 6;
+  let activeCards = [...allCards]; // default: tutte le card
+
+  // --- FUNZIONE PAGINAZIONE ---
+  function renderPage() {
+    const start = (currentPage - 1) * perPage;
+    const end = start + perPage;
+
+    
+    allCards.forEach(card => card.parentElement.style.display = "none");
+
+    
+    activeCards.forEach((card, index) => {
+      if (index >= start && index < end) {
+        card.parentElement.style.display = "block";
+      }
+    });
+
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const totalPages = Math.ceil(activeCards.length / perPage);
+    pagination.innerHTML = "";
+
+    if (totalPages <= 1) return;
+
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.className = "btn btn-sm btn-outline-primary mx-1";
+      btn.textContent = i;
+
+      if (i === currentPage) btn.classList.add("active");
+
+      btn.addEventListener("click", () => {
+        currentPage = i;
+        renderPage();
+      });
+
+      pagination.appendChild(btn);
+    }
+  }
+
+  // --- INIZIO: mostra solo 3 libri ---
+  let visible = 3;
+  allCards.forEach((card, i) => {
+    card.parentElement.style.display = i < visible ? "block" : "none";
+  });
+
+  loadMoreBtn.addEventListener("click", () => {
+    visible = 6;
+    allCards.forEach((card, i) => {
+      card.parentElement.style.display = i < visible ? "block" : "none";
+    });
+
+    loadMoreBtn.style.display = "none";
+
+    if (allCards.length > 6) {
+      activeCards = [...allCards];
+      renderPage();
+    }
+  });
+
+  // --- FILTRI ---
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const filter = btn.dataset.filter;
+
+      
+      currentPage = 1;
+
+      // Filtra card
+      activeCards = allCards.filter(card => {
+        const status = card.dataset.status;
+        return filter === "all" || status === filter;
+      });
+
+      
+      loadMoreBtn.style.display = "none";
+
+      
+      renderPage();
+    });
+  });
+});
+
+</script>

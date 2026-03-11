@@ -1,0 +1,368 @@
+<%- include('partials/header.ejs') %>
+
+<!-- Hero Section -->
+<div class="container p-5 mb-4 bg-body-tertiary rounded-3">
+  <div class="container-fluid py-5">
+    <h1 class="display-5 fw-bold">Gruppi 📚</h1>
+
+    <% if (inviteSent) { %>
+  <div id="invite-alert" 
+       class="alert alert-success text-center mx-auto mt-4" 
+       style="max-width: 600px; opacity: 0; transition: opacity 0.8s ease;">
+    Invito inviato con successo!
+  </div>
+<% } %>
+
+    <p class="col-md-8 fs-4">
+      In questa sezione puoi invitare nuovi amici e creare gruppi di lettura.<br>
+      Proponi libri che hai già letto o inizia un thread di discussione!
+    </p>
+
+    <button id="scrollToGroups" class="btn btn-primary btn-lg mt-3">
+  I tuoi gruppi
+</button>
+  </div>
+</div>
+
+<!-- Opzioni -->
+<div class="row align-items-md-stretch mb-4">
+  <div class="col-md-6">
+    <div class="h-100 p-5 text-bg-dark rounded-3">
+      <h2>Invita amici <i class="bi bi-people"></i></h2>
+      <p>Invita altri lettori come te e contribuisci ad allargare la nostra community!</p>
+      <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#inviteModal">Invita </button>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="h-100 p-5 bg-body-tertiary border rounded-3">
+      <h2>Crea gruppi di lettura <i class="bi bi-collection"></i></h2>
+      <p>Crea un nuovo gruppo di lettura, invita e proponi nuovi libri di cui discutere nei thread.</p>
+      <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+        Nuovo gruppo
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- LISTA GRUPPI -->
+<div class="p-4 w-100" style="max-width: 900px; margin: 0 auto;">
+
+  <div id="groups-container">
+    <%- include("partials/group-list", { groups, threads, posts, members }) %>
+  </div>
+
+</div>
+ 
+
+
+<!-- MODAL NUOVO THREAD -->
+<% groups.forEach(g => { %>
+<div class="modal fade" id="newThreadModal-<%= g.id %>" tabindex="-1">
+  <div class="modal-dialog">
+    <form action="/groups/<%= g.id %>/thread" method="POST" class="modal-content ajax-create-thread" data-group-id="<%= g.id %>">
+  <div class="modal-header">
+    <h5 class="modal-title">Nuovo thread per <%= g.name %></h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  </div>
+  <div class="modal-body">
+    <label class="form-label">Titolo del thread</label>
+    <input type="text" name="title" class="form-control" required>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary">Crea thread</button>
+  </div>
+</form>
+  </div>
+</div>
+<% }) %>
+
+
+<!-- MODAL CREAZIONE GRUPPO -->
+<div class="modal fade" id="createGroupModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <form action="/groups/create?user=<%= userId %>" method="post" class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Crea un nuovo gruppo di lettura</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-3">
+          <label class="form-label">Nome del gruppo</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Descrizione</label>
+          <textarea name="description" class="form-control" required></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Libro di discussione</label>
+          <select name="bookId" class="form-select" required>
+            <% savedBooks.forEach(book => { %>
+              <option value="<%= book.id %>"><%= book.title %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Invita partecipanti (email o username)</label>
+          <input type="text" name="invites" class="form-control" placeholder="es. mario@gmail.com, luca, anna">
+          <small class="text-muted">Separare con virgole</small>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary">Crea gruppo</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- MODAL INVITA AMICI -->
+<div class="modal fade" id="inviteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form action="/invite?user=<%= userId %>" method="POST" class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Invita un amico</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-3">
+          <label class="form-label">Email dell’amico</label>
+          <input type="email" name="friendEmail" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Messaggio personalizzato</label>
+          <textarea name="message" class="form-control" rows="3"
+            placeholder="Ciao! Vieni su IO Leggo con me…"></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary">Invia invito</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer.ejs') %>
+
+<script>
+document.getElementById("scrollToGroups").addEventListener("click", () => {
+  const section = document.getElementById("groups-container");
+  if (section) {
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+});
+
+// Script AJAX //
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // CREAZIONE THREAD (EVENT DELEGATION)
+
+document.addEventListener("submit", async (e) => {
+  if (!e.target.matches(".ajax-create-thread")) return;
+
+  e.preventDefault();
+
+  const form = e.target;
+  const groupId = form.dataset.groupId;
+  const title = form.querySelector("input[name='title']").value;
+
+  const res = await fetch(`/groups/${groupId}/thread?user=<%= userId %>`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ title })
+  });
+
+  if (!res.ok) {
+    const error = await res.text();
+    alert(error);
+    return;
+  }
+
+  const html = await res.text();
+
+  const container = document.querySelector(
+    `.thread-container[data-group-id="${groupId}"]`
+  );
+
+  container.innerHTML = html;
+  applyUserColors();
+
+  const modal = bootstrap.Modal.getInstance(form.closest(".modal"));
+  modal.hide();
+
+  form.querySelector("input[name='title']").value = "";
+});
+
+  // CREAZIONE MESSAGGIO (EVENT DELEGATION)
+  document.addEventListener("submit", async (e) => {
+    if (!e.target.matches(".ajax-create-post")) return;
+
+    e.preventDefault();
+
+    const form = e.target;
+    const threadId = form.dataset.threadId;
+
+    const formData = new URLSearchParams();
+    formData.append("text", form.querySelector("textarea[name='text']").value);
+
+    const res = await fetch(`/thread/${threadId}/post?user=<%= userId %>`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: formData.toString()
+    });
+
+    const html = await res.text();
+    const messages = document.querySelector(`[data-thread-id="${threadId}"]`);
+    if (messages) {
+      messages.innerHTML = html;
+      messages.scrollTop = messages.scrollHeight;
+      applyUserColors();
+    }
+
+    form.querySelector("textarea[name='text']").value = "";
+  });
+
+});
+
+// CANCELLAZIONE GRUPPO
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest(".delete-group-btn");
+  if (!btn) return;
+
+  const groupId = btn.dataset.groupId;
+
+  if (!confirm("Vuoi davvero eliminare questo gruppo? Tutti i thread e i messaggi andranno persi.")) {
+    return;
+  }
+
+  const res = await fetch(`/groups/${groupId}/delete?user=<%= userId %>`, {
+    method: "POST"
+  });
+
+  const html = await res.text();
+
+  const container = document.querySelector("#groups-container");
+  if (container) {
+    container.innerHTML = html;
+  }
+});
+
+
+function scrollThreadToBottom(threadId) {
+  const container = document.querySelector(`.messages[data-thread-id="${threadId}"]`);
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+// Scroll iniziale per tutti i thread aperti
+document.querySelectorAll(".messages").forEach(m => {
+  m.scrollTop = m.scrollHeight;
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const colors = [
+    "var(--group-color-1)",
+    "var(--group-color-2)",
+    "var(--group-color-3)",
+    "var(--group-color-4)",
+    "var(--group-color-5)",
+    "var(--group-color-6)",
+    "var(--group-color-7)",
+    "var(--group-color-8)",
+    "var(--group-color-9)",
+    "var(--group-color-10)"
+  ];
+
+  document.querySelectorAll(".group-card").forEach(card => {
+    const id = parseInt(card.dataset.groupId, 10);
+    const color = colors[id % colors.length];
+
+    // Colore card
+    card.style.setProperty("--group-accent", color);
+    card.style.setProperty("--group-bg", color + "15");
+
+    // Badge thread dentro questo gruppo
+    const threadBadges = card.querySelectorAll(".thread-badge");
+    threadBadges.forEach(badge => {
+      badge.style.background = color;
+    });
+  });
+});
+
+function applyUserColors() {
+  const userColors = [
+    "var(--group-color-1)",
+    "var(--group-color-2)",
+    "var(--group-color-3)",
+    "var(--group-color-4)",
+    "var(--group-color-5)",
+    "var(--group-color-6)",
+    "var(--group-color-7)",
+    "var(--group-color-8)",
+    "var(--group-color-9)",
+    "var(--group-color-10)"
+  ];
+
+  document.querySelectorAll(".user-color").forEach(el => {
+    const username = el.dataset.username;
+    if (!username) return;
+
+    let savedIndex = localStorage.getItem("color_" + username);
+
+    if (savedIndex === null) {
+      savedIndex = Math.floor(Math.random() * userColors.length);
+      localStorage.setItem("color_" + username, savedIndex);
+    }
+
+    el.style.background = userColors[savedIndex];
+    el.style.color = "white";
+  });
+}
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const alertBox = document.getElementById("invite-alert");
+    if (alertBox) {
+      // Fade-in
+      setTimeout(() => {
+        alertBox.style.opacity = "1";
+      }, 100);
+
+      // Fade-out dopo 3 secondi
+      setTimeout(() => {
+        alertBox.style.opacity = "0";
+      }, 3000);
+
+      // Rimuovi dal DOM dopo il fade-out
+      setTimeout(() => {
+        alertBox.remove();
+      }, 3800);
+    }
+  });
+
+
+
+document.addEventListener("DOMContentLoaded", applyUserColors);
+
+</script>
