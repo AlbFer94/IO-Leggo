@@ -21,8 +21,12 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
-  database: process.env.DB_NAME
+  database: process.env.DB_NAME,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
+
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
@@ -244,7 +248,14 @@ if (pool.length >= 2) {
 
   } catch (err) {
     console.error(err);
-    res.render("index.ejs", { book1: null, book2: null, recentComments: [], userId: req.userId });
+    res.render("index.ejs", { 
+  book1: null, 
+  book2: null, 
+  recentComments: [], 
+  recommendedBooks: [],
+  communityPopular: [],
+  userId: req.userId 
+});
   }
 });
 
