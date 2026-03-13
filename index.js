@@ -604,7 +604,8 @@ app.post("/invite", async (req, res) => {
   const token = crypto.randomBytes(20).toString("hex");
 
   // Link invito 
-  const inviteLink = `http://localhost:3000/invito?from=${username}&token=${token}`;
+  const baseUrl = process.env.BASE_URL;
+  const inviteLink = `${baseUrl}/invito?from=${username}&token=${token}`;
 
   const email = {
     to: friendEmail,
