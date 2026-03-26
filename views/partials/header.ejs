@@ -17,6 +17,18 @@
     <!-- BRAND: mantiene userId se esiste -->
     <a class="navbar-brand" href="/<%= userId ? ('?user=' + userId) : '' %>">IO Leggo 📚</a>
 
+    <% if (userId) { %>
+      <div class="nav-avatar-wrapper d-md-none d-flex align-items-center me-2">
+        <% if (avatarUrl) { %>
+          <img src="<%= avatarUrl %>" class="nav-avatar-mobile" alt="Avatar">
+        <% } else { %>
+          <div class="nav-avatar-placeholder-mobile">
+            <%= username ? username.charAt(0).toUpperCase() : "U" %>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -56,6 +68,18 @@
         <input class="form-control me-2" type="search" name="searchQuery" placeholder="Cerca un libro..." aria-label="Search">
         <button class="btn btn-outline-success" type="submit">Cerca</button>
       </form>
+
+      <% if (userId) { %>
+  <div class="ms-3 d-none d-md-flex align-items-center">
+    <% if (avatarUrl) { %>
+      <img src="<%= avatarUrl %>" alt="Avatar" class="nav-avatar">
+    <% } else { %>
+      <div class="nav-avatar-placeholder">
+        <%= username ? username.charAt(0).toUpperCase() : "U" %>
+      </div>
+    <% } %>
+  </div>
+<% } %>
 
     </div>
   </div>

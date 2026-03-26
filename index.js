@@ -176,6 +176,26 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(async (req, res, next) => {
+  if (!req.userId) {
+    res.locals.avatarUrl = null;
+    return next();
+  }
+
+  try {
+    const result = await pool.query(
+      "SELECT avatar_url FROM users WHERE id = $1",
+      [req.userId]
+    );
+
+    res.locals.avatarUrl = result.rows[0]?.avatar_url || null;
+    next();
+  } catch (err) {
+    console.error("Errore avatar:", err);
+    res.locals.avatarUrl = null;
+    next();
+  }
+});
 
 
 app.get("/", async (req, res) => {
