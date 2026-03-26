@@ -6,6 +6,7 @@ import session from "express-session";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import sgMail from "@sendgrid/mail";
+import { Server } from "http";
 
 dotenv.config();
 
@@ -22,9 +23,7 @@ const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl:false
 });
 
 
@@ -767,6 +766,65 @@ app.post("/login", async (req, res) => {
     res.status(500).send("Errore del server.");
   }
 });
+
+app.get("/auth/google", (req,res)=>{
+  const clientId=process.env.GOOGLE_CLIENT_ID;
+  const redirect=process.env.GOOGLE_REDIRECT_URI;
+  const scope=["openid","email","profile"];
+  try{
+    const googleAuthUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+    googleAuthUrl.searchParams.append("client_id", clientId);
+    googleAuthUrl.searchParams.append("redirect_uri", redirect);
+    googleAuthUrl.searchParams.append("response_type","code");
+    googleAuthUrl.searchParams.append("scope", scope.join(" "));
+    res.redirect(googleAuthUrl.toString());
+  } catch(err){
+    console.log(err);
+  }
+} );
+
+app.get("/auth/google/callback", async (req, res) => { 
+  const code=req.query.code;
+  try{
+   const response= await axios.post("https://oauth2.googleapis.com/token",
+    {
+      client_id:process.env.GOOGLE_CLIENT_ID,
+      client_secret:process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri:process.env.GOOGLE_REDIRECT_URI,
+      grant_type:"authorization_code",
+      code:code
+    }
+   );
+   const idToken= response.data.id_token;
+   const payload=JSON.parse(Buffer.from(idToken.split('.')[1],'base64').toString());
+
+   const googleId=payload.sub;
+   const email= payload.email;
+   const name= payload.name;
+   const avatar= payload.picture;
+
+   let user=await pool.query("SELECT * FROM users WHERE google_id=$1",[googleId]);
+
+   if(user.rows.length===0){
+    const existing=await pool.query("SELECT * FROM users WHERE email=$1",[email]);
+
+    if(existing.rows.length >0){
+      await pool.query("UPDATE users SET google_id=$1, avatar_url=$2 WHERE id=$3",[googleId, avatar, existing.rows[0].id]);
+      user=await pool.query("SELECT * FROM users WHERE id=$1",[existing.rows[0].id]);
+    }else{
+      user=await pool.query("INSERT INTO users (username, email, google_id, avatar_url) VALUES ($1, $2, $3, $4) RETURNING *", [name, email, googleId, avatar]);
+    }
+   }
+
+   req.session.userId=user.rows[0].id;
+
+   res.redirect("/");
+
+  }catch(err){
+    console.error("Errore OAuth:", err);
+    res.redirect("/user?logIn=true");
+  }
+ });
 
 app.get("/logout", (req, res) => {
   req.session.destroy(err => {
