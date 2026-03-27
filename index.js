@@ -17,13 +17,15 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const app = express();
 const port = process.env.PORT || 3000;
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
-  ssl:false
+  ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
 
@@ -212,10 +214,10 @@ app.get("/", async (req, res) => {
       return year >= 2018;
     });
 
-    const pool = recentBooks.length > 0 ? recentBooks : items;
+    const bookPool = recentBooks.length > 0 ? recentBooks : items;
 
     function pickRandomBook() {
-      const book = pool[Math.floor(Math.random() * pool.length)].volumeInfo;
+      const book = bookPool[Math.floor(Math.random() * bookPool.length)].volumeInfo;
       return {
         title: book.title,
         author: book.authors?.[0] || "Unknown",
@@ -770,6 +772,10 @@ app.post("/login", async (req, res) => {
     }
 
     const user = result.rows[0];
+
+    if (!user.password_hash) {
+      return res.status(400).send("Questo account usa l'accesso con Google.");
+    }
 
     const match = await bcrypt.compare(password, user.password_hash);
 
